@@ -1,5 +1,5 @@
 import pygame, random
-import const, test
+import const, test, particles
 
 class Player():
     def __init__(self):
@@ -75,12 +75,14 @@ class Player():
 
             if tick % 4 == 0:
                 self.moving_img_idx = self.moving_img_idx + 1 if not self.moving_img_idx == 1 else 0
+            
 
     def calc_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
                 self.speed[0] -= self.def_speed
                 self.looking_left = True
+                
             if event.key == pygame.K_d:
                 self.speed[0] += self.def_speed
                 self.looking_left = False
@@ -100,7 +102,7 @@ class Player():
             if event.key == pygame.K_c:
                 self.covering = False
 
-    def move(self, obstacles, enemy_list):
+    def move(self, obstacles, enemy_list, particle_list:list):
         self.check_on_ground(obstacles)
         self.fall()
         self.pos[0] += self.speed[0]
@@ -117,8 +119,9 @@ class Player():
             self.on_ground = True
             self.fall_time = 0
             self.speed[1] = 0
-
-        return self.enemy_colisions(enemy_list)
+        if not self.speed[0] == 0:
+            particle_list.append(particles.dust((self.pos[0], self.pos[1]-self.size[1]), 200))
+        return self.enemy_colisions(enemy_list), particle_list
 
 
     def action_colided(self, colided, axis, obstacle):

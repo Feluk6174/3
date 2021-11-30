@@ -1,14 +1,14 @@
 import const
-import pygame
+import pygame, players
 
 class Ghost():
     def __init__(self):
         self.pos = [0, 0]
         self.colide_pos = self.pos
-        self.size = (const.BASE_SIZE, const.BASE_SIZE)
+        self.size = (int(const.BASE_SIZE/2), int(const.BASE_SIZE/2))
         self.colide_size = self.size
         self.speed = [0, 0]
-        self.base_speed = 1
+        self.base_speed = 2
         self.looking = [False, False, False, False] #up, down, left, right
         self.path = "./images/ghost/"
         self.images = {"diagonal_0": {"img": pygame.image.load(self.path+"diagonal_0.png"), "rel_pos": (int(const.BASE_SIZE/2), int(const.BASE_SIZE/2)), "rel_size":(int(const.BASE_SIZE/2), int(const.BASE_SIZE/2))},
@@ -22,54 +22,19 @@ class Ghost():
         
         self.img_idx = 0
 
-    def display(self, screen, tick):
-        if self.looking.count(True) == 2:
-            img = self.images["diagonal_"+str(self.img_idx)]["img"]
-            if self.img_idx == 3:
-                img = pygame.transform.rotate(img, 270)
-                img = pygame.transform.flip(img, True, False)
+    def display(self, screen, tick:int):
+        img = pygame.image.load(self.path+"ghost.png")
+        img = pygame.transform.scale(img, self.size)
+        screen.blit(img, (self.pos[0], self.pos[1]))
+        #pygame.draw.rect(screen, (0, 255, 255), (self.pos[0], self.pos[1], self.size[1], self.size[1]))
+        return screen
 
-            if self.looking[0] and self.looking[2]:
-                img = pygame.transform.rotate(img, 180)
-            elif self.looking[0] and self.looking[3]:
-                img = pygame.transform.rotate(img, 90)
-            elif self.looking[1] and self.looking[2]:
-                img = pygame.transform.rotate(img, 270)
-            
-            img = pygame.transform.scale(img, self.size)
-            screen.blit(img, self.colide_pos)
-
-            if tick % 10 == 0:
-                self.img_idx = self.img_idx + 1 if not self.img_idx == 3 else 0
-
-        else:
-            img = self.images["horizontal_"+str(self.img_idx)]["img"]
-            if self.img_idx == 1 or self.img_idx == 3:
-                img = pygame.transform.rotate(img, 270)
-                img = pygame.transform.flip(img, True, False)
-
-            if not self.speed[0] == 0 and self.speed[1] == 0:
-                if self.speed[0] < 0:
-                    pygame.transform.rotate(img, 180)
-
-            else:
-                if self.speed[1] < 0:
-                    pygame.transform.rotate(img, 270)
-                else:
-                    pygame.transform.rotate(img, 90)
-            
-            img = pygame.transform.scale(img, self.size)
-            screen.blit(img, self.colide_pos)
-
-            if tick % 10 == 0:
-                self.img_idx = self.img_idx + 1 if not self.img_idx == 3 else 0
-
-    def move(self, player):
+    def move(self, player:players.Player):
         self.move_axis(player, 0)
         self.move_axis(player, 1)
-        print(self.speed)
+        #print(self.pos)
 
-    def move_axis(self, player, axis):
+    def move_axis(self, player:players.Player, axis:int):
             
         if player.colide_pos[axis] > self.colide_pos[axis]:
             other_axis = 0 if axis == 1 else 1

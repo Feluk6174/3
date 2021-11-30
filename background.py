@@ -2,7 +2,7 @@ import pygame
 import const
 
 class Background():
-    def __init__(self, pos):
+    def __init__(self, pos:list):
         self.pos = pos
         self.size = (const.BASE_SIZE*4, const.BASE_SIZE*4)
         #self.screen_pos = []
