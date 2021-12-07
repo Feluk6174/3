@@ -29,6 +29,7 @@ class Player():
         "moving_0":{"img": pygame.image.load("./images/player/moving_0.png"), "size": (const.BASE_SIZE-int(const.BASE_SIZE/32*16), const.BASE_SIZE-int(const.BASE_SIZE/32*1)), "edit_pos": (int(const.BASE_SIZE/32*8), int(const.BASE_SIZE/32*1))}, 
         "moving_1":{"img": pygame.image.load("./images/player/moving_1.png"), "size": (const.BASE_SIZE-int(const.BASE_SIZE/32*16), const.BASE_SIZE-int(const.BASE_SIZE/32*1)), "edit_pos": (int(const.BASE_SIZE/32*8), int(const.BASE_SIZE/32*1))}}
         self.max_fall_speed = 28
+        self.walking_particle_size = 5
 
 
     def display(self, screen, tick):
@@ -103,7 +104,7 @@ class Player():
                 self.covering = False
 
     def move(self, obstacles, enemy_list, particle_list:list):
-        self.check_on_ground(obstacles)
+        particle_list = self.check_on_ground(obstacles,particle_list)
         self.fall()
         self.pos[0] += self.speed[0]
         self.update_collision_box(self.colide_size, self.images[self.action+"_"+str(self.moving_img_idx)]["edit_pos"])
@@ -119,8 +120,11 @@ class Player():
             self.on_ground = True
             self.fall_time = 0
             self.speed[1] = 0
-        if not self.speed[0] == 0:
-            particle_list.append(particles.dust((self.pos[0], self.pos[1]-self.size[1]), 200))
+        if not self.speed[0] == 0 and self.on_ground:
+            if self.looking_left:
+                particle_list.append(particles.dust((self.pos[0], self.pos[1]+self.size[1]), self.walking_particle_size))
+            else:
+                particle_list.append(particles.dust((self.pos[0]+self.size[0], self.pos[1]+self.size[1]), self.walking_particle_size))
         return self.enemy_colisions(enemy_list), particle_list
 
 
@@ -150,14 +154,21 @@ class Player():
                 return True, obstacle
         return False, obstacle
 
-    def check_on_ground(self, obstacles):
+    def check_on_ground(self, obstacles, particle_list:list):
         self.colide_pos[1] += 3
         colided, obstacle = self.collision(obstacles)
         if colided:
+            if not self.on_ground:
+                particle_list.append(particles.dust((self.pos[0]-5, self.pos[1]+self.size[1]), self.walking_particle_size+1))
+                particle_list.append(particles.dust((self.pos[0]-10, self.pos[1]+self.size[1]), self.walking_particle_size+2))
+                particle_list.append(particles.dust((self.pos[0]-15, self.pos[1]+self.size[1]), self.walking_particle_size+3))
+                particle_list.append(particles.dust((self.pos[0]-20, self.pos[1]+self.size[1]), self.walking_particle_size+4))
+                particle_list.append(particles.dust((self.pos[0]-25, self.pos[1]+self.size[1]), self.walking_particle_size+5))
             self.on_ground = True
         else:
             self.on_ground = False
         self.colide_pos[1] -= 3
+        return particle_list
 
     def update_collision_box(self, size, rel_pos):
         self.colide_size = size
